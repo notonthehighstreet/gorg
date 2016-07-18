@@ -14,24 +14,6 @@ type Config struct {
 	User         string
 }
 
-func NewConfig(name string, domain string, environments []Environment) Config {
-	c := Config{}
-	c.Default = name
-	c.Environments = environments
-	return c
-}
-
-func NewConfigFile(name string, domain string) error {
-	env := NewEnvironment(name, domain)
-	config := NewConfig(name, domain, []Environment{env})
-	err := config.writeToJSON()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func LoadConfig(dataFile string) (Config, error) {
 	file, err := ioutil.ReadFile(dataFile)
 	if err != nil {
@@ -47,26 +29,24 @@ func LoadConfig(dataFile string) (Config, error) {
 	return config, err
 }
 
-func (c Config) AddConfigEnvironment(environmentName string, domain string) error {
-	c.Environments = append(c.Environments, NewEnvironment(environmentName, domain))
-	return c.UpdateConfig()
+func NewConfig(env Environment) error {
+	c := Config{}
+	c.Default = env.Name
+	c.Environments = []Environment{env}
+	return c.writeToJSON()
+}
+
+func (c Config) AddConfigEnvironment(env Environment) error {
+	c.Environments = append(c.Environments, env)
+	return c.updateConfig()
 }
 
 func (c Config) RemoveConfigEnvironment(environmentName string) error {
 	for i, env := range c.Environments {
 		if env.Name == environmentName {
 			c.Environments = append(c.Environments[:i], c.Environments[i+1:]...)
-			return c.UpdateConfig()
+			return c.updateConfig()
 		}
-	}
-
-	return nil
-}
-
-func (c Config) UpdateConfig() error {
-	err := c.writeToJSON()
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -74,7 +54,12 @@ func (c Config) UpdateConfig() error {
 
 func (c Config) ChangeUser(username string) error {
 	c.User = username
-	return c.UpdateConfig()
+	return c.updateConfig()
+}
+
+func (c Config) SwitchEnvironment(env Environment) error {
+	c.Default = env.Name
+	return c.updateConfig()
 }
 
 func (c Config) GetEnvironment(environmentName string) (Environment, error) {
@@ -87,14 +72,13 @@ func (c Config) GetEnvironment(environmentName string) (Environment, error) {
 	return Environment{}, errors.New("unknown environment name")
 }
 
-func (c Config) SwitchEnvironment(environmentName string) error {
-	env, err := c.GetEnvironment(environmentName)
+func (c Config) updateConfig() error {
+	err := c.writeToJSON()
 	if err != nil {
 		return err
 	}
 
-	c.Default = env.Name
-	return c.UpdateConfig()
+	return nil
 }
 
 func (c Config) writeToJSON() error {

@@ -3,27 +3,39 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/fatih/color"
 	"github.com/notonthehighstreet/gorg/service"
 	"github.com/urfave/cli"
 )
 
-func loadConfig() service.Config {
-	config, err := service.LoadConfig(ConfigFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return config
-}
-
 func initCommand() cli.Command {
 	return cli.Command{
 		Name:  "init",
 		Usage: "Initialise gorg configuration file",
 		Action: func(c *cli.Context) error {
-			return service.NewConfigFile(DefaultEnvironment, EnvironmentDomain)
+			env := service.NewEnvironment(DefaultEnvironment, EnvironmentDomain)
+			err := service.NewConfig(env)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+}
+
+func sshuserCommand() cli.Command {
+	return cli.Command{
+		Name:  "sshuser",
+		Usage: "Set provided user for ssh",
+		Action: func(c *cli.Context) error {
+			args := c.Args()
+			if len(args) == 1 {
+				config := loadConfig()
+				return config.ChangeUser(args[0])
+			}
+			return errors.New("you need to supply username")
 		},
 	}
 }
@@ -48,10 +60,10 @@ func showConfigCommand() cli.Command {
 			config := loadConfig()
 			env, err := config.GetEnvironment(config.Default)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 
-			fmt.Printf("Using %s environment by default: \n", color.YellowString(loadConfig().Default))
+			fmt.Printf("Using %s environment by default: \n", color.YellowString(config.Default))
 			fmt.Printf("%s", env.Services)
 			fmt.Print("\nEnvironments available: \n")
 			for _, env := range config.Environments {
@@ -70,9 +82,10 @@ func addConfigCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				return loadConfig().AddConfigEnvironment(args[0], EnvironmentDomain)
+				config := loadConfig()
+				env := service.NewEnvironment(args[0], EnvironmentDomain)
+				return config.AddConfigEnvironment(env)
 			}
-
 			return errors.New("you need to supply environment name")
 		},
 	}
@@ -85,25 +98,10 @@ func removeConfigCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				return loadConfig().RemoveConfigEnvironment(args[0])
+				config := loadConfig()
+				return config.RemoveConfigEnvironment(args[0])
 			}
-
 			return errors.New("you need to supply environment name")
-		},
-	}
-}
-
-func sshuserCommand() cli.Command {
-	return cli.Command{
-		Name:  "sshuser",
-		Usage: "Set provided user for ssh",
-		Action: func(c *cli.Context) error {
-			args := c.Args()
-			if len(args) == 1 {
-				return loadConfig().ChangeUser(args[0])
-			}
-
-			return errors.New("you need to supply username")
 		},
 	}
 }
@@ -115,7 +113,13 @@ func useCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				err := loadConfig().SwitchEnvironment(args[0])
+				config := loadConfig()
+				env, err := config.GetEnvironment(args[0])
+				if err != nil {
+					return err
+				}
+
+				err = config.SwitchEnvironment(env)
 				if err != nil {
 					return err
 				}
@@ -123,7 +127,6 @@ func useCommand() cli.Command {
 				CurrentEnvironment = DefaultEnvironment
 				return nil
 			}
-
 			return errors.New("you need to supply existing environment name")
 		},
 	}

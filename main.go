@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
+	"github.com/notonthehighstreet/gorg/service"
 	"github.com/urfave/cli"
 )
 
@@ -54,4 +56,12 @@ func main() {
 
 func setCurrentEnvironment() {
 	CurrentEnvironment = DefaultEnvironment
+}
+
+func loadConfig() service.Config {
+	config, err := service.LoadConfig(ConfigFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return config
 }

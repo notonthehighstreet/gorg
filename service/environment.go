@@ -8,6 +8,7 @@ import (
 
 type Environment struct {
 	Name     string
+	Domain   string
 	Services Services
 }
 
