@@ -41,7 +41,7 @@ func (s Services) String() string {
 }
 
 func NewEnvironment(name string, domain string) Environment {
-	return Environment{Name: name, Services: buildServicesMap(fmt.Sprintf("%s.%s", name, domain))}
+	return Environment{Name: name, Domain: domain, Services: buildServicesMap(fmt.Sprintf("%s.%s", name, domain))}
 }
 
 func buildServicesMap(envDomain string) Services {
