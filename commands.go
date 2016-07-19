@@ -141,7 +141,6 @@ func useCommand() cli.Command {
 					return err
 				}
 
-				CurrentEnvironment = DefaultEnvironment
 				return nil
 			}
 			return errors.New("you need to supply existing environment name")

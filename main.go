@@ -10,10 +10,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-var (
-	CurrentEnvironment string // CurrentEnvironment the current environment in use
-)
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "gorg"
@@ -35,7 +31,6 @@ func main() {
 	}
 
 	app.Before = func(c *cli.Context) error {
-		setCurrentEnvironment()
 		return nil
 	}
 
@@ -48,10 +43,6 @@ func main() {
 	}
 
 	app.Run(os.Args)
-}
-
-func setCurrentEnvironment() {
-	CurrentEnvironment = DefaultEnvironment
 }
 
 func loadConfig() service.Config {
