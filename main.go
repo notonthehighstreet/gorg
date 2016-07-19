@@ -12,10 +12,6 @@ import (
 
 var (
 	CurrentEnvironment string // CurrentEnvironment the current environment in use
-
-	ConfigFile         = "config.json"  // ConfigFile stores default config filename
-	DefaultEnvironment = "integration"  // DefaultEnvironment stores default/initial environment to be initialised
-	EnvironmentDomain  = "qa.noths.com" // EnvironmentDomain stores default environment domain for your services
 )
 
 func main() {

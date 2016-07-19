@@ -9,14 +9,21 @@ import (
 	"github.com/urfave/cli"
 )
 
+var (
+	ConfigFile         = "config.json"  // ConfigFile stores default config filename
+	DefaultEnvironment = "integration"  // DefaultEnvironment stores default/initial environment to be initialised
+	EnvironmentDomain  = "qa.noths.com" // EnvironmentDomain stores default environment domain for your services
+)
+
 func initCommand() cli.Command {
 	return cli.Command{
 		Name:  "init",
 		Usage: "Initialise gorg configuration file",
 		Action: func(c *cli.Context) error {
 			env := service.NewEnvironment(DefaultEnvironment, EnvironmentDomain)
-			err := service.NewConfig(env)
+			err := service.NewConfig(env, ConfigFile)
 			if err != nil {
+				fmt.Fprintf(c.App.Writer, "Error: %s", err)
 				return err
 			}
 
@@ -35,7 +42,10 @@ func sshuserCommand() cli.Command {
 				config := loadConfig()
 				return config.ChangeUser(args[0])
 			}
-			return errors.New("you need to supply username")
+
+			msg := "you need to supply username"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
 		},
 	}
 }
@@ -60,6 +70,7 @@ func showConfigCommand() cli.Command {
 			config := loadConfig()
 			env, err := config.GetEnvironment(config.Default)
 			if err != nil {
+				fmt.Fprintf(c.App.Writer, "Error: %s", err)
 				return err
 			}
 
@@ -86,7 +97,9 @@ func addConfigCommand() cli.Command {
 				env := service.NewEnvironment(args[0], EnvironmentDomain)
 				return config.AddConfigEnvironment(env)
 			}
-			return errors.New("you need to supply environment name")
+			msg := "you need to supply environment name"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
 		},
 	}
 }
@@ -101,7 +114,9 @@ func removeConfigCommand() cli.Command {
 				config := loadConfig()
 				return config.RemoveConfigEnvironment(args[0])
 			}
-			return errors.New("you need to supply environment name")
+			msg := "you need to supply environment name"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
 		},
 	}
 }
@@ -116,11 +131,13 @@ func useCommand() cli.Command {
 				config := loadConfig()
 				env, err := config.GetEnvironment(args[0])
 				if err != nil {
+					fmt.Fprintf(c.App.Writer, "Error: %s", err)
 					return err
 				}
 
 				err = config.SwitchEnvironment(env)
 				if err != nil {
+					fmt.Fprintf(c.App.Writer, "Error: %s", err)
 					return err
 				}
 

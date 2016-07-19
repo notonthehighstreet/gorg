@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Default      string
 	Environments []Environment
+	Path         string
 	User         string
 }
 
@@ -29,10 +30,11 @@ func LoadConfig(dataFile string) (Config, error) {
 	return config, err
 }
 
-func NewConfig(env Environment) error {
+func NewConfig(env Environment, path string) error {
 	c := Config{}
 	c.Default = env.Name
 	c.Environments = []Environment{env}
+	c.Path = path
 	return c.writeToJSON()
 }
 
@@ -42,6 +44,10 @@ func (c Config) AddConfigEnvironment(env Environment) error {
 }
 
 func (c Config) RemoveConfigEnvironment(environmentName string) error {
+	if c.Default == environmentName {
+		return errors.New("can not remove default environment")
+	}
+
 	for i, env := range c.Environments {
 		if env.Name == environmentName {
 			c.Environments = append(c.Environments[:i], c.Environments[i+1:]...)
@@ -87,7 +93,7 @@ func (c Config) writeToJSON() error {
 		return err
 	}
 
-	file, err := os.Create("./config.json")
+	file, err := os.Create(c.Path)
 	if err != nil {
 		return err
 	}
