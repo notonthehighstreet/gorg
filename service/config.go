@@ -39,6 +39,12 @@ func NewConfig(env Environment, path string) error {
 }
 
 func (c Config) AddConfigEnvironment(env Environment) error {
+	for _, environment := range c.Environments {
+		if environment == env {
+			return errors.New("environment has already exists")
+		}
+	}
+
 	c.Environments = append(c.Environments, env)
 	return c.updateConfig()
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/fatih/color"
 	"github.com/notonthehighstreet/gorg/service"
@@ -39,8 +40,12 @@ func sshuserCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				config := loadConfig()
-				return config.ChangeUser(args[0])
+				err := loadConfig().ChangeUser(args[0])
+				if err != nil {
+					fmt.Fprintf(c.App.Writer, "Error: %s", err)
+					return err
+				}
+				return nil
 			}
 
 			msg := "you need to supply username"
@@ -93,9 +98,12 @@ func addConfigCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				config := loadConfig()
 				env := service.NewEnvironment(args[0], EnvironmentDomain)
-				return config.AddConfigEnvironment(env)
+				err := loadConfig().AddConfigEnvironment(env)
+				if err != nil {
+					fmt.Fprintf(c.App.Writer, "Error: %s", err)
+				}
+				return nil
 			}
 			msg := "you need to supply environment name"
 			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
@@ -111,8 +119,11 @@ func removeConfigCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				config := loadConfig()
-				return config.RemoveConfigEnvironment(args[0])
+				err := loadConfig().RemoveConfigEnvironment(args[0])
+				if err != nil {
+					fmt.Fprintf(c.App.Writer, "Error: %s", err)
+				}
+				return nil
 			}
 			msg := "you need to supply environment name"
 			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
@@ -146,4 +157,12 @@ func useCommand() cli.Command {
 			return errors.New("you need to supply existing environment name")
 		},
 	}
+}
+
+func loadConfig() service.Config {
+	config, err := service.LoadConfig(ConfigFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return config
 }
