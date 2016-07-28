@@ -19,7 +19,9 @@ func AddFakeEnvironment() Config {
 	c, _ := LoadConfig(configFilename)
 	env := NewEnvironment(fakeEnvName, fakeDomain)
 	c.AddConfigEnvironment(env)
-	return c
+
+	reload, _ := LoadConfig(configFilename)
+	return reload
 }
 
 func TestLoadConfigReturnsNoError(t *testing.T) {
@@ -81,7 +83,7 @@ func TestChangeUserReturnsUpdatedUsername(t *testing.T) {
 
 func TestSwitchEnvironmentReturnsUpdatedDefaultEnvironment(t *testing.T) {
 	c := AddFakeEnvironment()
-	c.SwitchEnvironment(NewEnvironment(fakeEnvName, fakeDomain))
+	err := c.UseEnvironment(fakeEnvName)
 
 	reload, err := LoadConfig(configFilename)
 	defer NewConfig(NewEnvironment(defaultEnvName, defaultDomain), configFilename)

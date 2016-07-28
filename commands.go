@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/notonthehighstreet/gorg/service"
+	"github.com/pkg/browser"
 	"github.com/urfave/cli"
 )
 
@@ -139,22 +140,77 @@ func useCommand() cli.Command {
 		Action: func(c *cli.Context) error {
 			args := c.Args()
 			if len(args) == 1 {
-				config := loadConfig()
-				env, err := config.GetEnvironment(args[0])
+				err := loadConfig().UseEnvironment(args[0])
 				if err != nil {
 					fmt.Fprintf(c.App.Writer, "Error: %s", err)
-					return err
 				}
-
-				err = config.SwitchEnvironment(env)
-				if err != nil {
-					fmt.Fprintf(c.App.Writer, "Error: %s", err)
-					return err
-				}
-
 				return nil
 			}
-			return errors.New("you need to supply existing environment name")
+			msg := "you need to supply existing environment name"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
+		},
+	}
+}
+
+func serviceCommand() cli.Command {
+	config := loadConfig()
+	env, _ := config.GetEnvironment(config.Default)
+	consul := service.NewConsul(env.Services.ConsulUI)
+
+	return cli.Command{
+		Name:  "service",
+		Usage: "Interact with running services according to consul",
+		Subcommands: []cli.Command{
+			listServiceCommand(consul),
+			openServiceCommand(consul),
+			showServiceCommand(consul),
+		},
+	}
+}
+
+func listServiceCommand(consul *service.Consul) cli.Command {
+	return cli.Command{
+		Name:  "ls",
+		Usage: "List running services according to consul",
+		Action: func(c *cli.Context) error {
+			consul.ListServices()
+			return nil
+		},
+	}
+}
+
+func openServiceCommand(consul *service.Consul) cli.Command {
+	return cli.Command{
+		Name:  "open",
+		Usage: "Open selected service listed on Consul in a browser",
+		Action: func(c *cli.Context) error {
+			args := c.Args()
+			if len(args) == 1 {
+				url := consul.OpenService(args[0])
+				browser.OpenURL(url)
+				return nil
+			}
+			msg := "you need to supply service name"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
+		},
+	}
+}
+
+func showServiceCommand(consul *service.Consul) cli.Command {
+	return cli.Command{
+		Name:  "show",
+		Usage: "Show a particular service from consul",
+		Action: func(c *cli.Context) error {
+			args := c.Args()
+			if len(args) == 1 {
+				consul.ShowService(args[0])
+				return nil
+			}
+			msg := "you need to supply service name"
+			fmt.Fprintf(c.App.Writer, "Error: %s", msg)
+			return errors.New(msg)
 		},
 	}
 }

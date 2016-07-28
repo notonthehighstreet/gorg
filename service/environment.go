@@ -46,11 +46,11 @@ func NewEnvironment(name string, domain string) Environment {
 
 func buildServicesMap(envDomain string) Services {
 	s := Services{}
-	s.ConsulUI = fmt.Sprintf("http://consul-ui.service.%s:8500", envDomain)
-	s.Marathon = fmt.Sprintf("http://marathon.service.%s", envDomain)
-	s.Mesos = fmt.Sprintf("http://mesos.service.%s", envDomain)
-	s.Chronos = fmt.Sprintf("http://chronos.service.%s", envDomain)
-	s.Kibana = fmt.Sprintf("http://kibana.service.%s", envDomain)
-	s.WWW = fmt.Sprintf("http://www.public.%s", envDomain)
+	s.ConsulUI = fmt.Sprintf("consul-ui.service.%s:8500", envDomain)
+	s.Marathon = fmt.Sprintf("marathon.service.%s", envDomain)
+	s.Mesos = fmt.Sprintf("mesos.service.%s", envDomain)
+	s.Chronos = fmt.Sprintf("chronos.service.%s", envDomain)
+	s.Kibana = fmt.Sprintf("kibana.service.%s", envDomain)
+	s.WWW = fmt.Sprintf("www.public.%s", envDomain)
 	return s
 }

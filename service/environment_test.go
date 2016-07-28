@@ -23,12 +23,12 @@ func TestStringReturnsFormattedString(t *testing.T) {
 	e := NewEnvironment(name, domain)
 	s := e.Services
 	expected :=
-		"\n    ConsulUI: http://consul-ui.service.integration.qa.domain.com:8500" +
-			"\n    Marathon: http://marathon.service.integration.qa.domain.com" +
-			"\n    Mesos:    http://mesos.service.integration.qa.domain.com" +
-			"\n    Chronos:  http://chronos.service.integration.qa.domain.com" +
-			"\n    Kibana:   http://kibana.service.integration.qa.domain.com" +
-			"\n    WWW:      http://www.public.integration.qa.domain.com\n\t"
+		"\n    ConsulUI: consul-ui.service.integration.qa.domain.com:8500" +
+			"\n    Marathon: marathon.service.integration.qa.domain.com" +
+			"\n    Mesos:    mesos.service.integration.qa.domain.com" +
+			"\n    Chronos:  chronos.service.integration.qa.domain.com" +
+			"\n    Kibana:   kibana.service.integration.qa.domain.com" +
+			"\n    WWW:      www.public.integration.qa.domain.com\n\t"
 
 	assert.NotNil(t, s.String())
 	assert.Equal(t, expected, s.String())

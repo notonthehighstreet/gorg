@@ -26,6 +26,7 @@ func main() {
 		configCommand(),
 		sshuserCommand(),
 		useCommand(),
+		serviceCommand(),
 	}
 
 	app.Before = func(c *cli.Context) error {

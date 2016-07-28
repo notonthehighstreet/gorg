@@ -69,7 +69,21 @@ func (c Config) ChangeUser(username string) error {
 	return c.updateConfig()
 }
 
-func (c Config) SwitchEnvironment(env Environment) error {
+func (c Config) UseEnvironment(environmentName string) error {
+	env, err := c.GetEnvironment(environmentName)
+	if err != nil {
+		return err
+	}
+
+	err = c.switchEnvironment(env)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Config) switchEnvironment(env Environment) error {
 	c.Default = env.Name
 	return c.updateConfig()
 }
