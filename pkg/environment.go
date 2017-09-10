@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"fmt"
@@ -10,6 +10,22 @@ type Environment struct {
 	Name     string
 	Domain   string
 	Services Services
+}
+
+func NewEnvironment(name string, domain string) Environment {
+	s := Services{}
+	s.ConsulUI = fmt.Sprintf("consul-ui.service.%s.%s:8500", name, domain)
+	s.Marathon = fmt.Sprintf("marathon.service.%s.%s", name, domain)
+	s.Mesos = fmt.Sprintf("mesos.service.%s.%s", name, domain)
+	s.Chronos = fmt.Sprintf("chronos.service.%s.%s", name, domain)
+	s.Kibana = fmt.Sprintf("kibana.service.%s.%s", name, domain)
+	s.WWW = fmt.Sprintf("www.public.%s.%s", name, domain)
+
+	return Environment{
+		Name:     name,
+		Domain:   domain,
+		Services: s,
+	}
 }
 
 type Services struct {
@@ -38,19 +54,4 @@ func (s Services) String() string {
 		color.YellowString(s.Chronos),
 		color.YellowString(s.Kibana),
 		color.YellowString(s.WWW))
-}
-
-func NewEnvironment(name string, domain string) Environment {
-	return Environment{Name: name, Domain: domain, Services: buildServicesMap(fmt.Sprintf("%s.%s", name, domain))}
-}
-
-func buildServicesMap(envDomain string) Services {
-	s := Services{}
-	s.ConsulUI = fmt.Sprintf("consul-ui.service.%s:8500", envDomain)
-	s.Marathon = fmt.Sprintf("marathon.service.%s", envDomain)
-	s.Mesos = fmt.Sprintf("mesos.service.%s", envDomain)
-	s.Chronos = fmt.Sprintf("chronos.service.%s", envDomain)
-	s.Kibana = fmt.Sprintf("kibana.service.%s", envDomain)
-	s.WWW = fmt.Sprintf("www.public.%s", envDomain)
-	return s
 }

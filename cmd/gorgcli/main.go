@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -15,31 +14,17 @@ func main() {
 	app.Compiled = time.Now()
 	app.Usage = "CLI to interact with mesos, marathon, chronos and others"
 	app.Authors = []cli.Author{
-		cli.Author{
+		{
 			Name:  "Eggya Chiquita",
 			Email: "eggyachiquita@notonthehighstreet.com",
 		},
 	}
-
 	app.Commands = []cli.Command{
-		initCommand(),
-		configCommand(),
-		sshuserCommand(),
-		useCommand(),
-		serviceCommand(),
+		initCmd,
+		configCmd,
+		sshUserCmd,
+		switchCmd,
+		serviceCmd,
 	}
-
-	app.Before = func(c *cli.Context) error {
-		return nil
-	}
-
-	app.After = func(c *cli.Context) error {
-		return nil
-	}
-
-	app.CommandNotFound = func(c *cli.Context, command string) {
-		fmt.Fprintf(c.App.Writer, "Unknown command: %q\n", command)
-	}
-
 	app.Run(os.Args)
 }

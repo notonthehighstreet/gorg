@@ -1,10 +1,10 @@
-package service
+package pkg
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/hashicorp/consul/api"
-	"github.com/stretchr/testify/assert"
 )
 
 func mockedServices() map[string][]string {
@@ -12,7 +12,6 @@ func mockedServices() map[string][]string {
 	services["cdn"] = []string{"public", "http"}
 	services["consul"] = []string{}
 	services["chronos"] = []string{"http", "management"}
-
 	return services
 }
 
@@ -28,7 +27,6 @@ func mockedService(key string) []*api.CatalogService {
 			ServicePort:              31853,
 			ServiceEnableTagOverride: false,
 		}
-
 		return []*api.CatalogService{&cdn}
 	}
 	return []*api.CatalogService{}
@@ -48,21 +46,56 @@ func (d DoubleConsulCatalog) Service(serviceName, tag string, q *api.QueryOption
 	return d.serviceDetail, nil, d.err
 }
 
-var serviceKey = "elasticsearch-logstash"
-
-func TestServicesReturnsArrayOfService(t *testing.T) {
+func TestServices_WithNoError(t *testing.T) {
 	d := DoubleConsulCatalog{services: mockedServices()}
-	s := ConsulService{Catalog: d}
-	c := Consul{Service: s}
+	s := consulClient{catalog: d}
+	c := Consul{API: s}
+	exp, err := c.Services()
 
-	assert.Equal(t, len(mockedServices()), len(c.Services()))
+	if err != nil {
+		t.Error("unexpected error:", err)
+	}
+	if len(mockedServices()) != len(exp) {
+		t.Errorf("expecting %d services listed, got: %d", len(mockedServices()), len(exp))
+	}
 }
 
-func TestDiscoverServiceReturnsServiceDetails(t *testing.T) {
+func TestServices_WithError(t *testing.T) {
+	d := DoubleConsulCatalog{err: errors.New("error message")}
+	s := consulClient{catalog: d}
+	c := Consul{API: s}
+	exp, err := c.Services()
+
+	if err == nil {
+		t.Error("expected error got nil")
+	}
+	if len(exp) != 0 {
+		t.Errorf("unexpected content: %v", exp)
+	}
+}
+
+func TestDiscover_WitNoError(t *testing.T) {
 	key := "cdn"
 	d := DoubleConsulCatalog{serviceDetail: mockedService(key)}
-	s := ConsulService{Catalog: d}
-	c := Consul{Service: s}
+	s := consulClient{catalog: d}
+	c := Consul{API: s}
+	exp, err := c.Discover(key)
 
-	assert.Equal(t, mockedService(key), c.DiscoverService(key))
+	if err != nil {
+		t.Error("unexpected error:", err)
+	}
+	if len(mockedService(key)) != len(exp) {
+		t.Errorf("expecting %d, got: %d", len(mockedService(key)), len(exp))
+	}
+}
+
+func TestDiscover_WithError(t *testing.T) {
+	d := DoubleConsulCatalog{err: errors.New("error message")}
+	s := consulClient{catalog: d}
+	c := Consul{API: s}
+	_, err := c.Discover("cdn")
+
+	if err == nil {
+		t.Error("expecting an error got nil")
+	}
 }
