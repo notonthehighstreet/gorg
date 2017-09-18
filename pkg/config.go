@@ -1,6 +1,11 @@
 package pkg
 
-import "errors"
+import (
+	"bufio"
+	"encoding/json"
+	"errors"
+	"os"
+)
 
 type Config struct {
 	Default      string
@@ -62,4 +67,20 @@ func (c *Config) SwitchEnvironment(name string) error {
 
 func (c *Config) ChangeUser(name string) {
 	c.Username = name
+}
+
+func (c *Config) Update() error {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(c.Filepath)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	w := bufio.NewWriter(file)
+	w.Write(data)
+	w.Flush()
+	return nil
 }

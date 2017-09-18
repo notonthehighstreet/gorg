@@ -48,8 +48,8 @@ func (d DoubleConsulCatalog) Service(serviceName, tag string, q *api.QueryOption
 
 func TestServices_WithNoError(t *testing.T) {
 	d := DoubleConsulCatalog{services: mockedServices()}
-	s := consulClient{catalog: d}
-	c := Consul{API: s}
+	s := consulClient{Catalog: d}
+	c := Consul{Client: s}
 	exp, err := c.Services()
 
 	if err != nil {
@@ -62,8 +62,8 @@ func TestServices_WithNoError(t *testing.T) {
 
 func TestServices_WithError(t *testing.T) {
 	d := DoubleConsulCatalog{err: errors.New("error message")}
-	s := consulClient{catalog: d}
-	c := Consul{API: s}
+	s := consulClient{Catalog: d}
+	c := Consul{Client: s}
 	exp, err := c.Services()
 
 	if err == nil {
@@ -77,9 +77,9 @@ func TestServices_WithError(t *testing.T) {
 func TestDiscover_WitNoError(t *testing.T) {
 	key := "cdn"
 	d := DoubleConsulCatalog{serviceDetail: mockedService(key)}
-	s := consulClient{catalog: d}
-	c := Consul{API: s}
-	exp, err := c.Discover(key)
+	s := consulClient{Catalog: d}
+	c := Consul{Client: s}
+	exp, err := c.Service(key)
 
 	if err != nil {
 		t.Error("unexpected error:", err)
@@ -91,9 +91,9 @@ func TestDiscover_WitNoError(t *testing.T) {
 
 func TestDiscover_WithError(t *testing.T) {
 	d := DoubleConsulCatalog{err: errors.New("error message")}
-	s := consulClient{catalog: d}
-	c := Consul{API: s}
-	_, err := c.Discover("cdn")
+	s := consulClient{Catalog: d}
+	c := Consul{Client: s}
+	_, err := c.Service("cdn")
 
 	if err == nil {
 		t.Error("expecting an error got nil")

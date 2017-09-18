@@ -2,8 +2,6 @@ package pkg
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -14,22 +12,26 @@ var (
 func TestNewEnvironmentReturnsBuiltServices(t *testing.T) {
 	e := NewEnvironment(name, domain)
 
-	assert.Equal(t, name, e.Name)
-	assert.Equal(t, domain, e.Domain)
-	assert.NotNil(t, e.Services)
+	if name != e.Name {
+		t.Error("expected %s, got %s", name, e.Name)
+	}
+	if domain != e.Domain {
+		t.Error("expected %s, got %s", domain, e.Domain)
+	}
 }
 
 func TestStringReturnsFormattedString(t *testing.T) {
 	e := NewEnvironment(name, domain)
 	s := e.Services
 	expected :=
-		"\n    ConsulUI: consul-ui.service.integration.qa.domain.com:8500" +
-			"\n    Marathon: marathon.service.integration.qa.domain.com" +
-			"\n    Mesos:    mesos.service.integration.qa.domain.com" +
-			"\n    Chronos:  chronos.service.integration.qa.domain.com" +
-			"\n    Kibana:   kibana.service.integration.qa.domain.com" +
-			"\n    WWW:      www.public.integration.qa.domain.com\n\t"
+		"\n    ConsulUI: \x1b[33mconsul-ui.service.integration.qa.domain.com:8500\x1b[0m" +
+			"\n    Marathon: \x1b[33mmarathon.service.integration.qa.domain.com\x1b[0m" +
+			"\n    Mesos:    \x1b[33mmesos.service.integration.qa.domain.com\x1b[0m" +
+			"\n    Chronos:  \x1b[33mchronos.service.integration.qa.domain.com\x1b[0m" +
+			"\n    Kibana:   \x1b[33mkibana.service.integration.qa.domain.com\x1b[0m" +
+			"\n    WWW:      \x1b[33mwww.public.integration.qa.domain.com\x1b[0m\n\t"
 
-	assert.NotNil(t, s.String())
-	assert.Equal(t, expected, s.String())
+	if s.String() != expected {
+		t.Errorf("expected:\n%s\n got:\n%s\n", expected, s.String())
+	}
 }
