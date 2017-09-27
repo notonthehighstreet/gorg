@@ -14,16 +14,13 @@ type ServiceShowCommand struct {
 	name     string
 }
 
-func (ssc *ServiceShowCommand) Load() error {
-	err := ssc.loadConfig()
-	if err != nil {
-		return err
+func NewServiceShowCmd() ServiceShowCommand {
+	return ServiceShowCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: true,
+		},
 	}
-	err = ssc.loadConsul()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (ssc *ServiceShowCommand) Validate(c *cli.Context) error {
@@ -35,11 +32,10 @@ func (ssc *ServiceShowCommand) Validate(c *cli.Context) error {
 }
 
 func (ssc *ServiceShowCommand) Run() error {
-	services, err := ssc.cat.Service(ssc.name)
+	services, err := ssc.csl.Service(ssc.name)
 	if err != nil {
 		return err
 	}
-
 	for _, srv := range services {
 		output, err := json.MarshalIndent(srv, "", "\t")
 		if err != nil {

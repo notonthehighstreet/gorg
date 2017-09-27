@@ -13,12 +13,13 @@ type ConfigRemoveCommand struct {
 	name string
 }
 
-func (crc *ConfigRemoveCommand) Load() error {
-	err := crc.loadConfig()
-	if err != nil {
-		return err
+func NewConfigRemoveCmd() ConfigRemoveCommand {
+	return ConfigRemoveCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: false,
+		},
 	}
-	return nil
 }
 
 func (crc *ConfigRemoveCommand) Validate(c *cli.Context) error {
@@ -34,11 +35,7 @@ func (crc *ConfigRemoveCommand) Run() error {
 	if err != nil {
 		return err
 	}
-	err = crc.Cfg.Update()
-	if err != nil {
-		return err
-	}
-	return nil
+	return crc.Cfg.Update()
 }
 
 func (crc *ConfigRemoveCommand) String() {

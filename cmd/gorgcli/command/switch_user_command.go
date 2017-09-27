@@ -13,12 +13,13 @@ type SwitchUserCommand struct {
 	name string
 }
 
-func (suc *SwitchUserCommand) Load() error {
-	err := suc.loadConfig()
-	if err != nil {
-		return err
+func NewSwitchUserCmd() SwitchUserCommand {
+	return SwitchUserCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: false,
+		},
 	}
-	return nil
 }
 
 func (suc *SwitchUserCommand) Validate(c *cli.Context) error {
@@ -31,11 +32,7 @@ func (suc *SwitchUserCommand) Validate(c *cli.Context) error {
 
 func (suc *SwitchUserCommand) Run() error {
 	suc.Cfg.ChangeUser(suc.name)
-	err := suc.Cfg.Update()
-	if err != nil {
-		return err
-	}
-	return nil
+	return suc.Cfg.Update()
 }
 
 func (suc *SwitchUserCommand) String() {

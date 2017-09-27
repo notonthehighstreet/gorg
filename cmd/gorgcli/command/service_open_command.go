@@ -12,16 +12,13 @@ type ServiceOpenCommand struct {
 	name string
 }
 
-func (soc *ServiceOpenCommand) Load() error {
-	err := soc.loadConfig()
-	if err != nil {
-		return err
+func NewServiceOpenCmd() ServiceOpenCommand {
+	return ServiceOpenCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: true,
+		},
 	}
-	err = soc.loadConsul()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (soc *ServiceOpenCommand) Validate(c *cli.Context) error {
@@ -33,7 +30,7 @@ func (soc *ServiceOpenCommand) Validate(c *cli.Context) error {
 }
 
 func (soc *ServiceOpenCommand) Run() error {
-	url, err := soc.cat.ServiceURL(soc.name, "http")
+	url, err := soc.csl.ServiceURL(soc.name, "http")
 	if err != nil {
 		return err
 	}

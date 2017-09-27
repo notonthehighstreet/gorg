@@ -16,16 +16,13 @@ type ServiceListCommand struct {
 	services map[string][]string
 }
 
-func (slc *ServiceListCommand) Load() error {
-	err := slc.loadConfig()
-	if err != nil {
-		return err
+func NewServiceListCmd() ServiceListCommand {
+	return ServiceListCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: true,
+		},
 	}
-	err = slc.loadConsul()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (slc *ServiceListCommand) Validate(c *cli.Context) error {
@@ -33,7 +30,7 @@ func (slc *ServiceListCommand) Validate(c *cli.Context) error {
 }
 
 func (slc *ServiceListCommand) Run() error {
-	services, err := slc.cat.Services()
+	services, err := slc.csl.Services()
 	if err != nil {
 		return err
 	}

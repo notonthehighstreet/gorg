@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -13,6 +14,8 @@ type ConsulCatalog interface {
 }
 
 type ConsulKV interface {
+	List(string, *api.QueryOptions) (api.KVPairs, *api.QueryMeta, error)
+	Get(string, *api.QueryOptions) (*api.KVPair, *api.QueryMeta, error)
 }
 
 type consulClient struct {
@@ -21,14 +24,13 @@ type consulClient struct {
 }
 
 type Consul struct {
-	Client  consulClient
-	opts    *api.QueryOptions
-	address string
+	Client consulClient
+	opts   *api.QueryOptions
 }
 
-func NewConsul(address string) (*Consul, error) {
+func NewConsul(name string) (*Consul, error) {
 	cfg := api.DefaultConfig()
-	cfg.Address = address
+	cfg.Address = fmt.Sprintf("consul-ui.service.%s.qa.noths.com", name)
 	client, err := api.NewClient(cfg)
 	if err != nil {
 		return &Consul{}, err
@@ -38,7 +40,7 @@ func NewConsul(address string) (*Consul, error) {
 		Catalog: client.Catalog(),
 		KV:      client.KV(),
 	}
-	return &Consul{Client: cc, address: address, opts: &api.QueryOptions{}}, nil
+	return &Consul{Client: cc, opts: &api.QueryOptions{}}, nil
 }
 
 func (c *Consul) Service(name string) ([]*api.CatalogService, error) {
@@ -64,4 +66,37 @@ func (c *Consul) ServiceURL(name, tag string) (string, error) {
 	}
 	url := fmt.Sprintf("http://%s%s%d", srv[0].Address, string(os.PathListSeparator), srv[0].ServicePort)
 	return url, nil
+}
+
+func (c *Consul) ServiceAddress(name string) (string, error) {
+	srv, _, err := c.Client.Catalog.Service(name, "", c.opts)
+	if err != nil {
+		return "", err
+	}
+	return srv[0].Address, nil
+}
+
+func (c *Consul) KVList(service string) (map[string]string, error) {
+	kvs, _, err := c.Client.KV.List(service, c.opts)
+	if err != nil {
+		return nil, err
+	}
+	list := map[string]string{}
+	for _, kv := range kvs {
+		list[kv.Key] = string(kv.Value)
+	}
+	return list, err
+}
+
+func (c *Consul) KVGet(name string) (map[string]string, error) {
+	kv, _, err := c.Client.KV.Get(name, c.opts)
+	if err != nil {
+		return nil, err
+	}
+	if kv == nil {
+		return nil, errors.New("key not found")
+	}
+	res := make(map[string]string)
+	res[kv.Key] = string(kv.Value)
+	return res, err
 }

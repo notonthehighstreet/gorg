@@ -15,12 +15,11 @@ type Config struct {
 	Environments []Environment
 }
 
-func NewConfig(env Environment, path, domain string) *Config {
+func NewConfig(path, domain string) *Config {
 	return &Config{
-		Default:      env.Name,
 		Filepath:     path,
 		Domain:       domain,
-		Environments: []Environment{env},
+		Environments: []Environment{},
 	}
 }
 
@@ -31,6 +30,7 @@ func (c *Config) AddEnvironment(env Environment) error {
 		}
 	}
 	c.Environments = append(c.Environments, env)
+	c.Default = env.Name
 	return nil
 }
 

@@ -4,7 +4,7 @@ import "testing"
 
 func TestAddEnvironment_WithNoError(t *testing.T) {
 	env := NewEnvironment("bogus-env-name", "bogus-domain-name")
-	cfg := NewConfig(env, "path", "domain")
+	cfg := Config{Default: "path", Domain: "domain", Environments: []Environment{env}}
 	err := cfg.AddEnvironment(Environment{Name: "another-bogus-name"})
 
 	if err != nil {
@@ -14,7 +14,7 @@ func TestAddEnvironment_WithNoError(t *testing.T) {
 
 func TestAddEnvironment_WithError(t *testing.T) {
 	env := NewEnvironment("bogus-env-name", "bogus-domain-name")
-	cfg := NewConfig(env, "path", "domain")
+	cfg := Config{Default: "path", Domain: "domain", Environments: []Environment{env}}
 	err := cfg.AddEnvironment(env)
 
 	if err == nil {

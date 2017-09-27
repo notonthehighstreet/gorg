@@ -2,10 +2,9 @@ package command
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/urfave/cli"
-
-	"fmt"
 
 	"github.com/notonthehighstreet/gorg/pkg"
 )
@@ -15,12 +14,13 @@ type ConfigAddCommand struct {
 	name string
 }
 
-func (cac *ConfigAddCommand) Load() error {
-	err := cac.loadConfig()
-	if err != nil {
-		return err
+func NewConfigAddCmd() ConfigAddCommand {
+	return ConfigAddCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: false,
+		},
 	}
-	return nil
 }
 
 func (cac *ConfigAddCommand) Validate(c *cli.Context) error {
@@ -37,11 +37,7 @@ func (cac *ConfigAddCommand) Run() error {
 	if err != nil {
 		return err
 	}
-	err = cac.Cfg.Update()
-	if err != nil {
-		return err
-	}
-	return nil
+	return cac.Cfg.Update()
 }
 
 func (cac *ConfigAddCommand) String() {

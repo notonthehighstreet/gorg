@@ -15,12 +15,13 @@ type ConfigShowCommand struct {
 	envs       []pkg.Environment
 }
 
-func (csc *ConfigShowCommand) Load() error {
-	err := csc.loadConfig()
-	if err != nil {
-		return err
+func NewConfigShowCmd() ConfigShowCommand {
+	return ConfigShowCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: false,
+		},
 	}
-	return nil
 }
 
 func (csc *ConfigShowCommand) Validate(c *cli.Context) error {

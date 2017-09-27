@@ -12,25 +12,21 @@ import (
 const exitCode int = 86
 
 var (
-	initCmd       = command.InitCommand{}
-	switchEnvCmd  = command.SwitchEnvironmentCommand{}
-	switchUserCmd = command.SwitchUserCommand{}
-	cfgShowCmd    = command.ConfigShowCommand{}
-	cfgAddCmd     = command.ConfigAddCommand{}
-	cfgRmCmd      = command.ConfigRemoveCommand{}
-	srvListCmd    = command.ServiceListCommand{}
-	srvShowCmd    = command.ServiceShowCommand{}
-	srvOpenCmd    = command.ServiceOpenCommand{}
+	initCmd       = command.NewInitCmd()
+	consoleCmd    = command.NewConsoleCmd()
+	switchEnvCmd  = command.NewSwitchEnvironmentCmd()
+	switchUserCmd = command.NewSwitchUserCmd()
+	cfgAddCmd     = command.NewConfigAddCmd()
+	cfgShowCmd    = command.NewConfigShowCmd()
+	cfgRmCmd      = command.NewConfigRemoveCmd()
+	kvGetCmd      = command.NewKVGetCmd()
+	kvListCmd     = command.NewKVListCmd()
+	srvListCmd    = command.NewServiceListCmd()
+	srvShowCmd    = command.NewServiceShowCmd()
+	srvOpenCmd    = command.NewServiceOpenCmd()
 )
 
-type Command interface {
-	Load() error
-	Validate(c *cli.Context) error
-	Run() error
-	String()
-}
-
-func do(cmd Command) func(*cli.Context) error {
+func do(cmd command.Command) func(*cli.Context) error {
 	return func(c *cli.Context) (err error) {
 		err = cmd.Load()
 		if err != nil {
@@ -67,10 +63,15 @@ func main() {
 			Name:  "init",
 			Usage: "initialise gorg configuration file",
 			Flags: []cli.Flag{
-				cli.StringFlag{Name: "environment-name"},
 				cli.StringFlag{Name: "domain"},
 			},
 			Action: do(&initCmd),
+		},
+		{
+			Name:      "console",
+			Usage:     "ssh into a service box",
+			ArgsUsage: "[service-name]",
+			Action:    do(&consoleCmd),
 		},
 		{
 			Name:      "use",
@@ -104,6 +105,24 @@ func main() {
 					Usage:     "Remove an environment from your current configuration",
 					ArgsUsage: "[environment-name]",
 					Action:    do(&cfgRmCmd),
+				},
+			},
+		},
+		{
+			Name:  "kv",
+			Usage: "Interact with KVs stored in consul",
+			Subcommands: []cli.Command{
+				{
+					Name:      "ls",
+					Usage:     "List kvs for certain service",
+					ArgsUsage: "[service-name]",
+					Action:    do(&kvListCmd),
+				},
+				{
+					Name:      "get",
+					Usage:     "Show a particular kv from consul",
+					ArgsUsage: "[key]",
+					Action:    do(&kvGetCmd),
 				},
 			},
 		},

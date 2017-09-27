@@ -2,7 +2,6 @@ package command
 
 import (
 	"errors"
-
 	"fmt"
 
 	"github.com/urfave/cli"
@@ -13,12 +12,13 @@ type SwitchEnvironmentCommand struct {
 	name string
 }
 
-func (sec *SwitchEnvironmentCommand) Load() error {
-	err := sec.loadConfig()
-	if err != nil {
-		return err
+func NewSwitchEnvironmentCmd() SwitchEnvironmentCommand {
+	return SwitchEnvironmentCommand{
+		baseCommand: baseCommand{
+			loadConfig: true,
+			loadConsul: false,
+		},
 	}
-	return nil
 }
 
 func (sec *SwitchEnvironmentCommand) Validate(c *cli.Context) error {
@@ -34,11 +34,7 @@ func (sec *SwitchEnvironmentCommand) Run() error {
 	if err != nil {
 		return err
 	}
-	err = sec.Cfg.Update()
-	if err != nil {
-		return err
-	}
-	return nil
+	return sec.Cfg.Update()
 }
 
 func (sec *SwitchEnvironmentCommand) String() {
