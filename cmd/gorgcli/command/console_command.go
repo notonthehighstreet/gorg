@@ -3,7 +3,6 @@ package command
 import (
 	"errors"
 	"os"
-
 	"os/exec"
 
 	"github.com/urfave/cli"
@@ -39,6 +38,8 @@ func (cmd *ConsoleCommand) Run() error {
 
 	c := exec.Command("ssh", address)
 	c.Stdout = os.Stdout
+	c.Stdin = os.Stdin
+	c.Stderr = os.Stderr
 	return c.Run()
 }
 

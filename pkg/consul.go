@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
+	"strings"
 
 	"github.com/hashicorp/consul/api"
 )
@@ -28,9 +30,9 @@ type Consul struct {
 	opts   *api.QueryOptions
 }
 
-func NewConsul(name string) (*Consul, error) {
+func NewConsul(address string) (*Consul, error) {
 	cfg := api.DefaultConfig()
-	cfg.Address = fmt.Sprintf("consul-ui.service.%s.qa.noths.com", name)
+	cfg.Address = strings.Split(address, string(os.PathListSeparator))[0]
 	client, err := api.NewClient(cfg)
 	if err != nil {
 		return &Consul{}, err
@@ -72,6 +74,9 @@ func (c *Consul) ServiceAddress(name string) (string, error) {
 	srv, _, err := c.Client.Catalog.Service(name, "", c.opts)
 	if err != nil {
 		return "", err
+	}
+	if reflect.DeepEqual(srv, []*api.CatalogService{}) {
+		return "", errors.New("service not found")
 	}
 	return srv[0].Address, nil
 }

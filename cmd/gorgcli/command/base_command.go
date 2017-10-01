@@ -54,7 +54,11 @@ func (bc *baseCommand) Load() error {
 		bc.Cfg = &cfg
 	}
 	if bc.loadConsul {
-		consul, err := pkg.NewConsul(bc.Cfg.Default)
+		env, err := bc.Cfg.LoadEnvironment(bc.Cfg.Default)
+		if err != nil {
+			return err
+		}
+		consul, err := pkg.NewConsul(env.Services.ConsulUI)
 		if err != nil {
 			return err
 		}
